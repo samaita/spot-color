@@ -6,6 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var (
@@ -25,6 +26,9 @@ type Game struct {
 
 	diffX int
 	diffY int
+
+	posDiffX int
+	posDiffY int
 }
 
 func (g *Game) Update() error {
@@ -57,7 +61,19 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64((defaultBoxSizeX*i)+2), float64((defaultBoxSizeY*j)+2))
+			if i == g.diffX && j == g.diffY {
+				g.posDiffX = (defaultBoxSizeX * i) + 2
+				g.posDiffY = (defaultBoxSizeY * j) + 2
+			}
+
 			screen.DrawImage(rect, op)
+		}
+	}
+
+	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
+		x, y := ebiten.CursorPosition()
+		if x <= g.posDiffX+defaultBoxSizeX && x > g.posDiffX && y <= g.posDiffY+defaultBoxSizeY && y > g.posDiffY {
+			g.diffX, g.diffY = defaultDiffX, defaultDiffY
 		}
 	}
 
