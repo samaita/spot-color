@@ -17,18 +17,18 @@ var (
 	screenSizeX     int = 600
 	screenSizeY     int = 600
 
-	defaultDiffX, defaultDiffY = -1, -1
+	defaultBoxDiffX, defaultBoxDiffY = -1, -1
 )
 
 type Game struct {
 	ScreenSizeX int
 	ScreenSizeY int
 
-	diffX int
-	diffY int
+	indexBoxDiffX int
+	indexBoxDiffY int
 
-	posDiffX int
-	posDiffY int
+	posBoxDiffX int
+	posBoxDiffY int
 }
 
 func (g *Game) Update() error {
@@ -41,42 +41,71 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	maxBoxAmountX := g.ScreenSizeX / defaultBoxSizeX
 	maxBoxAmountY := g.ScreenSizeY / defaultBoxSizeY
 
-	if g.diffX == -1 {
-		g.diffX = rand.Intn(maxBoxAmountX)
-	}
-
-	if g.diffY == -1 {
-		g.diffY = rand.Intn(maxBoxAmountX)
-	}
+	g.setNewColorDiffIndex(maxBoxAmountX, maxBoxAmountY)
 
 	for i := 0; i < maxBoxAmountX; i++ {
 		for j := 0; j < maxBoxAmountY; j++ {
 			rect := ebiten.NewImage(defaultBoxSizeX-4, defaultBoxSizeY-4)
-
-			if i == g.diffX && j == g.diffY {
-				rect.Fill(grey)
-			} else {
-				rect.Fill(lightgrey)
-			}
+			rect.Fill(g.getNewBoxColorDiff(i, j))
 
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64((defaultBoxSizeX*i)+2), float64((defaultBoxSizeY*j)+2))
-			if i == g.diffX && j == g.diffY {
-				g.posDiffX = (defaultBoxSizeX * i) + 2
-				g.posDiffY = (defaultBoxSizeY * j) + 2
-			}
-
+			op.GeoM.Translate(float64(g.setBoxSize(i)), float64(g.setBoxSize(j)))
 			screen.DrawImage(rect, op)
+
+			g.setNewColorDiffPosition(i, j)
 		}
 	}
 
+	if g.isClickOnBox() {
+		g.resetColorDiffPosition()
+	}
+}
+
+func (g *Game) isClickOnBox() bool {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
-		if x <= g.posDiffX+defaultBoxSizeX && x > g.posDiffX && y <= g.posDiffY+defaultBoxSizeY && y > g.posDiffY {
-			g.diffX, g.diffY = defaultDiffX, defaultDiffY
+		if x <= g.posBoxDiffX+defaultBoxSizeX && x > g.posBoxDiffX && y <= g.posBoxDiffY+defaultBoxSizeY && y > g.posBoxDiffY {
+			return true
 		}
 	}
+	return false
+}
 
+// setNewColorDiffIndex setup new box index with different color
+func (g *Game) setNewColorDiffIndex(maxX, maxY int) {
+	if g.indexBoxDiffX == -1 {
+		g.indexBoxDiffX = rand.Intn(maxX)
+	}
+	if g.indexBoxDiffY == -1 {
+		g.indexBoxDiffY = rand.Intn(maxY)
+	}
+}
+
+// setNewColorDiffPosition setup new box position with different color
+func (g *Game) setNewColorDiffPosition(indexX, indexY int) {
+	if indexX == g.indexBoxDiffX && indexY == g.indexBoxDiffY {
+		g.posBoxDiffX = (defaultBoxSizeX * indexX) + 2
+		g.posBoxDiffY = (defaultBoxSizeY * indexY) + 2
+	}
+}
+
+// getNewBoxColorDiff define a color difference betwen boxes, changes every turn, diff 40% reduce 5% each turn, stop reduced at 10%
+func (g *Game) getNewBoxColorDiff(indexX, indexY int) color.RGBA {
+	if indexX == g.indexBoxDiffX && indexY == g.indexBoxDiffY {
+		return lightgrey
+	} else {
+		return grey
+	}
+}
+
+// setBoxSize set box size, getting smaller each turn, stop reduced at 10x10
+func (g *Game) setBoxSize(index int) int {
+	return (defaultBoxSizeX * index) + 2
+}
+
+// resetColorDiffPosition reset position of the diff box
+func (g *Game) resetColorDiffPosition() {
+	g.indexBoxDiffX, g.indexBoxDiffY = defaultBoxDiffX, defaultBoxDiffY
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -88,10 +117,10 @@ func main() {
 	ebiten.SetWindowSize(screenSizeX, screenSizeY)
 	ebiten.SetWindowTitle("Spot Different Color!")
 	if err := ebiten.RunGame(&Game{
-		ScreenSizeX: screenSizeX,
-		ScreenSizeY: screenSizeY,
-		diffX:       defaultDiffX,
-		diffY:       defaultDiffY,
+		ScreenSizeX:   screenSizeX,
+		ScreenSizeY:   screenSizeY,
+		indexBoxDiffX: defaultBoxDiffX,
+		indexBoxDiffY: defaultBoxDiffY,
 	}); err != nil {
 		log.Fatal(err)
 	}
