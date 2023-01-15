@@ -38,6 +38,13 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+
+	if g.isClickOnBox() {
+		g.clicked++
+		g.reduceBoxSize()
+		g.resetColorDiffPosition()
+	}
+
 	return nil
 }
 
@@ -60,12 +67,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 			g.setNewColorDiffPosition(i, j)
 		}
-	}
-
-	if g.isClickOnBox() {
-		g.clicked++
-		g.reduceBoxSize()
-		g.resetColorDiffPosition()
 	}
 }
 
