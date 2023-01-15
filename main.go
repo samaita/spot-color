@@ -73,8 +73,6 @@ func (g *Game) isClickOnBox() bool {
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		x, y := ebiten.CursorPosition()
 
-		log.Println(x, g.posBoxDiffX+g.sizeBoxX, g.posBoxDiffX, "||", y, g.posBoxDiffY+g.sizeBoxY, g.posBoxDiffY)
-
 		if x <= g.posBoxDiffX+g.sizeBoxX && x > g.posBoxDiffX && y <= g.posBoxDiffY+g.sizeBoxY && y > g.posBoxDiffY {
 			return true
 		}
