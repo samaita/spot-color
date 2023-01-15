@@ -4,18 +4,17 @@ import (
 	"image/color"
 	"log"
 	"math/rand"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 var (
-	lightgrey           = color.RGBA{0xc2, 0xc5, 0xc6, 0xff}
-	grey                = color.RGBA{0xff, 0xc5, 0xc6, 0xff}
-	defaultBoxSizeX     = 100
-	defaultBoxSizeY     = 100
-	screenSizeX     int = 600
-	screenSizeY     int = 600
+	lightgrey       = color.RGBA{0xc2, 0xc5, 0xc6, 0xff}
+	grey            = color.RGBA{0xff, 0xc5, 0xc6, 0xff}
+	screenSizeX int = 600
+	screenSizeY int = 600
 
 	defaultBoxDiffX, defaultBoxDiffY = -1, -1
 )
@@ -37,6 +36,7 @@ type Game struct {
 	maxReduced int
 }
 
+// Update by one tick
 func (g *Game) Update() error {
 
 	if g.isClickOnBox() {
@@ -128,6 +128,10 @@ func (g *Game) resetColorDiffPosition() {
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
 	return g.ScreenSizeX, g.ScreenSizeY
+}
+
+func init() {
+	rand.Seed(time.Now().Unix())
 }
 
 func main() {
